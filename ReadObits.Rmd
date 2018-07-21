@@ -1,0 +1,45 @@
+---
+title: "Read Obits"
+author: "Alan Jackson"
+date: "July 20, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(rvest) # for reading html
+library(stringr) # string functions
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Use Obits as a death rate proxy
+
+To get an estimate of very recent death rates, use the county paper obits. 
+
+https://www.wilsoncountynews.com/news/2018-06-27/Funeral_Notices
+xpath=
+
+//*[contains(concat( " ", @class, " " ), concat( " ", "article-content", " " ))]
+
+```{r read obits}
+
+folder <- "file:///home/ajackson/Dropbox/Rprojects/WilsonCountyGunStudy/"
+input <- "Funeral_Notices_Wilson_County_News.html"
+
+#   regular expressions for dates
+born <- "\\d{0,2}-?\\d{0,2}-?\\d{4} ?(\u2014|\u2013|--) ?"
+died <- " ?(--|\u2014|\u2013|\u2022) ?\\d{1,2}-\\d{1,2}-\\d{4}"
+
+df <- read_html(input) %>%
+  html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "article-content", " " ))]') %>%
+  html_text() %>%
+  data.frame(stringsAsFactors = FALSE) %>%
+  rename(input=".") %>%
+  mutate(name=str_trim(str_remove_all(str_remove_all(input,"[\\t\\n]"), "(Free|\\d).*$"))) %>%
+  mutate(born=str_trim(str_remove(str_extract(input, born),"(\u2014|\u2013|--)"))) %>%
+  mutate(died=str_trim(str_remove(str_extract(input, died),"(\u2014|\u2013|--|\u2022)")))
+
+```
+
