@@ -1,0 +1,46 @@
+---
+title: "Read Gun Permit Data"
+author: "Alan Jackson"
+date: "July 21, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(textreadr)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Here be files by zipcode, with varying names...
+
+http://www.dps.texas.gov/RSD/LTC/Reports/2014Calendar/byZipcode/17LicenseApplicationsIssued.pdf
+
+http://www.dps.texas.gov/rsd/LTC/reports/2010Calendar/ByZipCode/CY10ZipCodeLicApplIssued.pdf
+
+http://www.dps.texas.gov/rsd/LTC/reports/2009Calendar/ByZipCode/CY09ZipLicAppsIssued.pdf
+
+```{r read by zip}
+#   Download all the pdfs
+
+output_folder <- "~/Dropbox/Rprojects/WilsonCountyGunStudy/GunPermits"
+for (year in 1997:2017) {
+  if (year>2010) {
+  url <- paste0("http://www.dps.texas.gov/RSD/LTC/Reports/",year,"Calendar/byZipcode/17LicenseApplicationsIssued.pdf")
+  }
+  else if (year == 2010) {
+  url <- paste0("http://www.dps.texas.gov/RSD/LTC/Reports/",year,"Calendar/byZipcode/CY",substr(year,3,4),"ZipCodeLicApplIssued.pdf")
+  }
+  else {
+  url <- paste0("http://www.dps.texas.gov/RSD/LTC/Reports/",year,"Calendar/byZipcode/CY",substr(year,3,4),"ZipLicAppsIssued.pdf")
+  }
+  outfile <- paste0("LicenseApplicationsIssued",year,".pdf")
+  m <- download(url, output_folder, outfile) 
+  print(m)
+}
+
+
+
+
+```
+
