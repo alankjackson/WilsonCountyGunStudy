@@ -35,6 +35,7 @@ input <- "Funeral_Notices_Wilson_County_News.html"
 born <- "\\d{0,2}-?\\d{0,2}-?\\d{4} ?(\u2014|\u2013|--) ?"
 died <- "( ?(--|\u2014|\u2013) ?\\d{1,2}-\\d{1,2}-\\d{4})|(\u2022 ?\\d{1,2}-\\d{1,2}-\\d{4} ?\u2022)"
 died <- " ?(--|\u2014|\u2013) ?\\d{1,2}-\\d{1,2}-\\d{4}"
+mindead <- mdy("1/1/2015")
 
 df <- read_html(input) %>%
   html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "article-content", " " ))]') %>%
@@ -46,6 +47,7 @@ df <- read_html(input) %>%
   mutate(died=str_trim(str_remove_all(str_extract(input, died),"(\u2014|\u2013|--|\u2022)"))) %>%
   select(name, born, died) %>%
   mutate(born=mdy(born), died=mdy(died)) %>%
+  mutate(died=if_else(died<mindead, as.Date(NA), died)) %>%
   mutate(age=round((died-born)/365.2422, 2))
   
 ```
@@ -54,6 +56,13 @@ df <- read_html(input) %>%
 
 
 ```{r}
+
+summary(df)
+
+df %>%
+  ggplot(aes(x=died, y=age)) +
+  geom_point()
+
 
 ```
 
