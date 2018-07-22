@@ -10,6 +10,7 @@ output: html_document
 library(tidyverse)
 library(rvest) # for reading html
 library(stringr) # string functions
+library(lubridate) # date functions
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -25,12 +26,15 @@ xpath=
 
 ```{r read obits}
 
+#  Read in names, birth and death dates from obits
+
 folder <- "file:///home/ajackson/Dropbox/Rprojects/WilsonCountyGunStudy/"
 input <- "Funeral_Notices_Wilson_County_News.html"
 
 #   regular expressions for dates
 born <- "\\d{0,2}-?\\d{0,2}-?\\d{4} ?(\u2014|\u2013|--) ?"
-died <- " ?(--|\u2014|\u2013|\u2022) ?\\d{1,2}-\\d{1,2}-\\d{4}"
+died <- "( ?(--|\u2014|\u2013) ?\\d{1,2}-\\d{1,2}-\\d{4})|(\u2022 ?\\d{1,2}-\\d{1,2}-\\d{4} ?\u2022)"
+died <- " ?(--|\u2014|\u2013) ?\\d{1,2}-\\d{1,2}-\\d{4}"
 
 df <- read_html(input) %>%
   html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "article-content", " " ))]') %>%
@@ -39,7 +43,17 @@ df <- read_html(input) %>%
   rename(input=".") %>%
   mutate(name=str_trim(str_remove_all(str_remove_all(input,"[\\t\\n]"), "(Free|\\d).*$"))) %>%
   mutate(born=str_trim(str_remove(str_extract(input, born),"(\u2014|\u2013|--)"))) %>%
-  mutate(died=str_trim(str_remove(str_extract(input, died),"(\u2014|\u2013|--|\u2022)")))
+  mutate(died=str_trim(str_remove_all(str_extract(input, died),"(\u2014|\u2013|--|\u2022)"))) %>%
+  select(name, born, died) %>%
+  mutate(born=mdy(born), died=mdy(died)) %>%
+  mutate(age=round((died-born)/365.2422, 2))
+  
+```
+
+##  Do some sanity checks and analysis on obit data
+
+
+```{r}
 
 ```
 
