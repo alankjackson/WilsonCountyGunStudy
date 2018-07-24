@@ -132,6 +132,13 @@ for (year in c(1997:2010,2013:2017)) {
   final <- bind_rows(final, a)
 }
 
+#   add in missing data for 2014
+
+c("WILSON", "WINKLER", "WISE", "WOOD", "YOAKUM", "YOUNG", "ZAPATA", "ZAVALA", "[Out of State County]", "Total",
+  "719", "64", "909", "603", "52", "244", "60", "37", "2248", "246326",
+  "0.29", "0.03", "0.37", "0.24", "0.02", "0.10", "0.02", "0.02", "0.91", "100.00")
+
+
 
 ```
 
