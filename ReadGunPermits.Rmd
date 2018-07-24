@@ -150,6 +150,15 @@ final <- bind_rows(final, lost)
 
 #   add in data for 2011 and 2012 that was an image and had to be ocr'd in Google
 
+temp <- read.csv("~/Dropbox/Rprojects/WilsonCountyGunStudy/GunPermits/CountyPermits2011.csv")
+temp$Year <- as.character(temp$Year)
+final <- bind_rows(final, temp)
+
+temp <- read.csv("~/Dropbox/Rprojects/WilsonCountyGunStudy/GunPermits/CountyPermits2012.csv")
+temp$Year <- as.character(temp$Year)
+temp$Applicants <- as.numeric(temp$Applicants)
+final <- bind_rows(final, temp)
+
 ```
 
 
