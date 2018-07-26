@@ -159,7 +159,87 @@ temp$Year <- as.character(temp$Year)
 temp$Applicants <- as.numeric(temp$Applicants)
 final <- bind_rows(final, temp)
 
+#     enforce some consistency
+
+final$County <- str_replace(final$County, "\\[Out of State County\\]", "NONE")
+final$County <- str_replace(final$County, "\\[NONE\\]", "NONE")
+
+#     Save to a file
+
+saveRDS(final, file="~/Dropbox/Rprojects/WilsonCountyGunStudy/CountyPermitData.rds")
+
 ```
 
+
+##   Do a little QC on the data
+
+```{r QC step}
+
+summary(final)
+
+final %>%
+  filter(Percent<25) %>%
+  filter(County!="Total") %>%
+  ggplot(aes(x=Applicants, y=Percent)) +
+  geom_point()
+
+#   make a rotated bar chart of applications by county
+final %>%
+  filter(County!="Total") %>%
+  ggplot(aes(x=County, y=Applicants)) +
+  geom_col() +
+  coord_flip()
+
+```
+
+##    Parse zipcode gun permit files
+
+```{r parse zipcode files}
+
+parse_zip <- function(path, year){
+  options(stringsAsFactors = FALSE)
+  
+  final <- data.frame(Year=character(),
+                      County=character(),
+                      Applicants=numeric(),
+                      Percent=numeric(),
+                      stringsAsFactors = FALSE)
+  
+  a <- extract_tables(path)
+  skip <- 2
+  if (year==2006|year==2007) {skip <- 3}
+  if (year==2014) {skip <- 4}
+  tnum <- 1:3  # table numbers to grab
+  if (year==2014) {tnum <- c(1,3,5)}
+  
+  for (i in tnum){
+    temp <- as.data.frame(a[[i]][skip:nrow(a[[i]]),1:3], stringsAsFactors = FALSE)
+    names(temp) <- c("County", "Applicants", "Percent")
+    temp <- cbind(Year=as.character(year), temp)
+    temp$Applicants <- as.numeric(gsub(",","",temp$Applicants))
+    temp$Percent <- as.numeric(gsub("%","",temp$Percent))
+    final <- bind_rows(final, temp)
+    
+    temp <- as.data.frame(a[[i]][skip:nrow(a[[i]]),4:6], stringsAsFactors = FALSE)
+    names(temp) <- c("County", "Applicants", "Percent")
+    temp <- cbind(Year=as.character(year), temp)
+    temp$Applicants <- as.numeric(gsub(",","",temp$Applicants))
+    temp$Percent <- as.numeric(gsub("%","",temp$Percent))
+    final <- bind_rows(final, temp)
+  }
+  if (year != 2014) {
+    temp <- as.data.frame(a[[4]][skip:nrow(a[[4]]),1:3], stringsAsFactors = FALSE)
+    names(temp) <- c("County", "Applicants", "Percent")
+    temp <- cbind(Year=as.character(year), temp)
+    temp$Applicants <- as.numeric(gsub(",","",temp$Applicants))
+    temp$Percent <- as.numeric(gsub("%","",temp$Percent))
+    final <- bind_rows(final, temp)
+  }
+  
+  return(final)
+}
+
+
+```
 
 
