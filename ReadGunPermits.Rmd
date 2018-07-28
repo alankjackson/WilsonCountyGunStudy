@@ -200,46 +200,85 @@ parse_zip <- function(path, year){
   options(stringsAsFactors = FALSE)
   
   final <- data.frame(Year=character(),
-                      County=character(),
+                      Zipcode=character(),
                       Applicants=numeric(),
-                      Percent=numeric(),
                       stringsAsFactors = FALSE)
   
   a <- extract_tables(path)
-  skip <- 2
-  if (year==2006|year==2007) {skip <- 3}
-  if (year==2014) {skip <- 4}
-  tnum <- 1:3  # table numbers to grab
-  if (year==2014) {tnum <- c(1,3,5)}
+  skip <- 3
+  tnum <- 1:length(a)  # table numbers to grab
   
   for (i in tnum){
-    temp <- as.data.frame(a[[i]][skip:nrow(a[[i]]),1:3], stringsAsFactors = FALSE)
-    names(temp) <- c("County", "Applicants", "Percent")
-    temp <- cbind(Year=as.character(year), temp)
-    temp$Applicants <- as.numeric(gsub(",","",temp$Applicants))
-    temp$Percent <- as.numeric(gsub("%","",temp$Percent))
-    final <- bind_rows(final, temp)
-    
-    temp <- as.data.frame(a[[i]][skip:nrow(a[[i]]),4:6], stringsAsFactors = FALSE)
-    names(temp) <- c("County", "Applicants", "Percent")
-    temp <- cbind(Year=as.character(year), temp)
-    temp$Applicants <- as.numeric(gsub(",","",temp$Applicants))
-    temp$Percent <- as.numeric(gsub("%","",temp$Percent))
-    final <- bind_rows(final, temp)
+    print(paste("----", i, "-----"))
+    width <- dim(a[[i]])[2]
+    temp <- as.data.frame(a[[i]][skip:nrow(a[[i]]),1:width], stringsAsFactors = FALSE)
+    # split table vertically
+    if (width==8){
+      temp <- temp %>% bind_rows(rename(select(.,V3,V4), V1=V3, V2=V4), rename(select(.,V5,V6),V1=V5, V2=V6),rename(select(.,V7,V8), V1=V7, V2=V8))%>%
+      select(V1, V2)
   }
-  if (year != 2014) {
-    temp <- as.data.frame(a[[4]][skip:nrow(a[[4]]),1:3], stringsAsFactors = FALSE)
-    names(temp) <- c("County", "Applicants", "Percent")
+  else if (width==6){
+      temp <- temp %>% bind_rows(rename(select(.,V3,V4), V1=V3, V2=V4), rename(select(.,V5,V6),V1=V5, V2=V6))%>%
+      select(V1, V2)
+  }
+  else if (width == 4) {
+      temp <- temp %>% bind_rows(rename(select(.,V3,V4), V1=V3, V2=V4))%>%
+      select(V1, V2)
+  }
+    
+    names(temp) <- c("Zipcode", "Applicants")
     temp <- cbind(Year=as.character(year), temp)
     temp$Applicants <- as.numeric(gsub(",","",temp$Applicants))
-    temp$Percent <- as.numeric(gsub("%","",temp$Percent))
-    final <- bind_rows(final, temp)
+    final <- bind_rows(final, temp) %>%
+      na.omit()
+    
+    
   }
   
   return(final)
+} ####   end of function
+
+finalzip <- data.frame(Year=character(),
+                    Zipcode=character(),
+                    Applicants=numeric(),
+                    stringsAsFactors = FALSE)
+
+path <- "~/Dropbox/Rprojects/WilsonCountyGunStudy/GunPermits/LicenseApplicationsIssued_by_Zip"
+for (year in c(1997:2010,2013:2017)) {
+  print(paste0("parse ",year))
+  a <- parse_zip(paste0(path,year,".pdf"), year)
+  finalzip <- bind_rows(finalzip, a)
 }
+#   drop rows with zipcodes not in Texas
+finalzip$Zipcode <- as.numeric(finalzip$Zipcode)
+finalzip <- finalzip %>% 
+  na.omit() %>%
+  filter(Zipcode==73301 | 
+         between(Zipcode,75001,75501) |
+         between(Zipcode,75503,79999))
+  
+
+#   Pick up tables that extract_tables failed to find
+
+yr1997 <- c("79905", "79906", "79907", "79908", "79912", "79915", "79916", "79922", "79924", "79925", "79927", "79930", "79932", "79934", "79935", "79936", "79937", "79938", "87111", "88021", "88220",
+  "6", "2", "14", "1", "103", "15", "4", "27", "80", "49", "12", "19", "23", "10", "38", "83", "1", "15", "1", "1", "1", "50,130")
 
 
 ```
+
+	
+
+    if (width==8){
+      temp <- temp %>% bind_rows(select(., V1, V2), rename(select(.,V3,V4), V1=V3, V2=V4), rename(select(.,V5,V6),V1=V5, V2=V6),rename(select(.,V7,V8), V1=V7, V2=V8))%>%
+      select(V1, V2)
+  }
+  else if (width==6){
+      temp <- temp %>% bind_rows(select(., V1, V2), rename(select(.,V3,V4), V1=V3, V2=V4), rename(select(.,V5,V6),V1=V5, V2=V6))%>%
+      select(V1, V2)
+  }
+  else if (width == 4) {
+      temp <- temp %>% bind_rows(select(., V1, V2), rename(select(.,V3,V4), V1=V3, V2=V4))%>%
+      select(V1, V2)
+  }
 
 
