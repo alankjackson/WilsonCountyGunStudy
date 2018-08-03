@@ -15,8 +15,9 @@ Deaths estimated from funeral notices in Wilson County News
 
 https://www.wilsoncountynews.com/news/2018-07-11/Funeral_Notices
 
-Death causes by age group from the CDC
+Death causes by age group from U Wash study
 
+http://ghdx.healthdata.org/gbd-results-tool
 https://www.cdc.gov/nchs/nvss/mortality/lcwk2.htm
 
 Texas deaths in 2014 by county and cause
