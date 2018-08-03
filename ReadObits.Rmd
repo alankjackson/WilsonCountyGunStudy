@@ -66,3 +66,24 @@ df %>%
 
 ```
 
+##    Aggregate into 25 year age ranges, and quarterly dates, then plot
+
+```{r plot quarterly aggregates}
+
+dfnew <- df %>%
+  na.omit() %>%
+  mutate(qtr=as.yearqtr(died), 
+         agegrp=as.integer(age/25)) %>%
+  group_by(agegrp, qtr) %>%
+  summarize(agegroup=n()) %>%
+  mutate(normage=agegroup/sum(agegroup))
+totals <- dfnew %>%
+  summarize(agetot=sum(agegroup))
+dfnew %>%
+  ggplot(aes(x=qtr, y=normage, fill=agegrp, group=agegrp)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  scale_x_yearqtr(format = "%YQ%q") +
+  scale_fill_continuous(type = "viridis")
+
+```
+
