@@ -1,0 +1,27 @@
+---
+title: "Look for anomalies"
+author: "Alan Jackson"
+date: "August 4, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(anomalize)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Look for anomalies in county data
+
+```{r county anomalies}
+
+df <- readRDS("~/Dropbox/Rprojects/WilsonCountyGunStudy/CountyPermitData.rds")
+
+#   year 1999 looks funky, so let's start analysis with 2000
+
+df <- df %>%
+  mutate(Year=as.numeric(Year)) %>%
+  filter(Year>1999)
+```
+
